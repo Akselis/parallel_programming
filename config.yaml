@@ -1,0 +1,11 @@
+runconfig:
+  - type: 0
+    threads: 1
+  - type: 1
+    threads: 2
+  - type: 1
+    threads: 4
+  - type: 2
+    threads: 2
+  - type: 2
+    threads: 4
