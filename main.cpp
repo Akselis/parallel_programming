@@ -31,7 +31,7 @@ int main(int argc, char** argv)
         const auto& rc = runs[i];
         std::cout << "Leidziama konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
         std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
-        if(rc.type == 3){
+        if(rc.type == 3 && !mpiInitialized){
             mpiInitialized = true;
             int rank = 0, size = 1;
             MPI_Init(nullptr, nullptr);
