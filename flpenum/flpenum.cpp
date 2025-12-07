@@ -42,6 +42,15 @@ RunResult runEnumeration(const RunConfig& config) {
 	demandFile = config.inputFile;
 	omp_set_num_threads(config.threads);
 
+	int mpiRankLocal = 0;
+	if (config.type == 3) {
+		int mpiInitFlag = 0;
+		MPI_Initialized(&mpiInitFlag);
+		if (mpiInitFlag) {
+			MPI_Comm_rank(MPI_COMM_WORLD, &mpiRankLocal);
+		}
+	}
+
 	int mpiRank = 0, mpiSize = 1;
 	int mpiInitialized = 0;
 	if (config.type == 3) {
@@ -222,7 +231,7 @@ RunResult runEnumeration(const RunConfig& config) {
 	
     //----- Rezultatu spausdinimas --------------------------------------------
 	double t_finish = getTime();     // Skaiciavimu pabaigos laikas
-	if (config.type != 3 || mpiRank == 0) {
+	if (config.type != 3 || mpiRankLocal == 0) {
 		cout << "Sprendinio paieskos trukme: " << t_finish - t_matrix << endl;
 		cout << "Algoritmo vykdymo trukme: " << t_finish - t_start << endl;
 		cout << "Geriausias sprendinys: ";
