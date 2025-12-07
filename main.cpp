@@ -10,10 +10,11 @@
 #include <ctime>
 #include <sstream>
 #include <filesystem>
+#include <mpi.h>
 
 int main(int argc, char** argv)
 {
-    std::string configPath = (argc > 1) ? argv[1] : "config.yaml";
+    std::string configPath = (argc > 1) ? argv[1] : "./yaml/config.yaml";
     std::vector<RunConfig> runs;
     if (!loadConfig(configPath, runs)) {
         std::cerr << "Nepavyko ikelti konfiguracijos failo " << configPath << '\n';
@@ -29,7 +30,16 @@ int main(int argc, char** argv)
         const auto& rc = runs[i];
         std::cout << "Leidziama konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
         std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
+        if(rc.type == 3){
+            int rank = 0, size = 1;
+            MPI_Init(nullptr, nullptr);
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            MPI_Comm_size(MPI_COMM_WORLD, &size);
+        }
         results.push_back(runEnumeration(rc));
+    }
+    if(rc.type == 3){
+        MPI_Finalize();
     }
 
     std::filesystem::create_directories("results");
