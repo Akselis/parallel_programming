@@ -42,13 +42,52 @@ RunResult runEnumeration(const RunConfig& config) {
 	demandFile = config.inputFile;
 	omp_set_num_threads(config.threads);
 
+	int mpiRank = 0, mpiSize = 1;
+	int mpiInitialized = 0;
+	if (config.type == 3) {
+		MPI_Initialized(&mpiInitialized);
+		if (!mpiInitialized) {
+			MPI_Init(nullptr, nullptr);
+			mpiInitialized = 1;
+		}
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
+		MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
+	}
+
 	// (Re)allocate solution buffers for current numX
 	if (X) delete[] X;
 	if (bestX) delete[] bestX;
 	X = new int[numX];
 	bestX = new int[numX];
 
-	loadDemandPoints();             // Duomenu nuskaitymas is failo	
+	if (config.type == 3 && mpiRank != 0) {
+		// allocate demandPoints; data will come via broadcast
+		demandPoints = new double*[numDP];
+		for (int i = 0; i < numDP; ++i) demandPoints[i] = new double[3];
+	} else {
+		loadDemandPoints();             // Duomenu nuskaitymas is failo
+	}
+
+	// Broadcast demandPoints to all ranks for type 3
+	if (config.type == 3) {
+		std::vector<double> flat(numDP * 3);
+		if (mpiRank == 0) {
+			for (int i = 0; i < numDP; ++i) {
+				flat[i*3 + 0] = demandPoints[i][0];
+				flat[i*3 + 1] = demandPoints[i][1];
+				flat[i*3 + 2] = demandPoints[i][2];
+			}
+		}
+		MPI_Bcast(flat.data(), static_cast<int>(flat.size()), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		if (mpiRank != 0) {
+			for (int i = 0; i < numDP; ++i) {
+				demandPoints[i][0] = flat[i*3 + 0];
+				demandPoints[i][1] = flat[i*3 + 1];
+				demandPoints[i][2] = flat[i*3 + 2];
+			}
+		}
+	}
+
     double t_start = getTime();     // Algoritmo vykdymo pradzios laikas
 
     //----- Atstumu matricos skaiciavimas -------------------------------------
@@ -146,28 +185,27 @@ RunResult runEnumeration(const RunConfig& config) {
 		break;
 	}
 	case 3:{
-				
-		MPI_Bcast(&numDP, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		MPI_Bcast(&numPF, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		MPI_Bcast(&numCL, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		MPI_Bcast(&numX, 1, MPI_INT, 0, MPI_COMM_WORLD);
-		MPI_Bcast(demandPoints[0], numDP * 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 		double localBestU = -1.0;
-		std::vector<int> localBestX(numX), X(numX);
-		for (int first = rank; first < numCL - (numX - 1); first += size) {
-			for (int i = 0; i < numX; ++i) X[i] = first + i;
+		std::vector<int> localBestX(numX), localX(numX);
+		for (int first = mpiRank; first < numCL - (numX - 1); first += mpiSize) {
+			for (int i = 0; i < numX; ++i) localX[i] = first + i;
 			do {
-				double u_local = evaluateSolution(X.data());
-				if (u_local > localBestU) { localBestU = u_local; localBestX = X; }
-			} while (increaseX(X.data(), numX - 1, numCL) && X[0] == first);
+				double u_local = evaluateSolution(localX.data());
+				if (u_local > localBestU) { localBestU = u_local; localBestX = localX; }
+			} while (increaseX(localX.data(), numX - 1, numCL) && localX[0] == first);
 		}
 
-		struct { double val; int rank; } in{localBestU, rank}, out;
+		struct { double val; int rank; } in{localBestU, mpiRank}, out;
 		MPI_Allreduce(&in, &out, 1, MPI_DOUBLE_INT, MPI_MAXLOC, MPI_COMM_WORLD);
 		std::vector<int> globalBestX(numX);
-		if (rank == out.rank) MPI_Send(localBestX.data(), numX, MPI_INT, 0, 0, MPI_COMM_WORLD);
-		if (rank == 0) MPI_Recv(globalBestX.data(), numX, MPI_INT, out.rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		if (mpiRank == out.rank) MPI_Send(localBestX.data(), numX, MPI_INT, 0, 0, MPI_COMM_WORLD);
+		if (mpiRank == 0) MPI_Recv(globalBestX.data(), numX, MPI_INT, out.rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Bcast(globalBestX.data(), numX, MPI_INT, 0, MPI_COMM_WORLD);
+		MPI_Bcast(&out.val, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		bestU = out.val;
+		for (int i = 0; i < numX; ++i) bestX[i] = globalBestX[i];
+		break;
 	}
 	case 0:
 	case 2:
@@ -184,12 +222,14 @@ RunResult runEnumeration(const RunConfig& config) {
 	
     //----- Rezultatu spausdinimas --------------------------------------------
 	double t_finish = getTime();     // Skaiciavimu pabaigos laikas
-	cout << "Sprendinio paieskos trukme: " << t_finish - t_matrix << endl;
-    cout << "Algoritmo vykdymo trukme: " << t_finish - t_start << endl;
-    cout << "Geriausias sprendinys: ";
-	for (int i=0; i<numX; i++) cout << bestX[i] << " ";
-	cout << "(" << bestU << " procentai rinkos)" << endl;
-	cout << "----------------------------------------" << endl;
+	if (config.type != 3 || mpiRank == 0) {
+		cout << "Sprendinio paieskos trukme: " << t_finish - t_matrix << endl;
+		cout << "Algoritmo vykdymo trukme: " << t_finish - t_start << endl;
+		cout << "Geriausias sprendinys: ";
+		for (int i=0; i<numX; i++) cout << bestX[i] << " ";
+		cout << "(" << bestU << " procentai rinkos)" << endl;
+		cout << "----------------------------------------" << endl;
+	}
 
 	RunResult res;
 	res.type = config.type;

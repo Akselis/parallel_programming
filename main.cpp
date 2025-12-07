@@ -33,10 +33,7 @@ int main(int argc, char** argv)
         std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
         if(rc.type == 3 && !mpiInitialized){
             mpiInitialized = true;
-            int rank = 0, size = 1;
             MPI_Init(nullptr, nullptr);
-            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-            MPI_Comm_size(MPI_COMM_WORLD, &size);
         }
         results.push_back(runEnumeration(rc));
     }
