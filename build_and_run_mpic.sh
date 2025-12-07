@@ -38,3 +38,4 @@ else
   echo "yq not found; running a single mpirun with default ranks (use -np yourself)"
   mpirun ./flpenum_app "${CONFIG_PATH}"
 fi
+echo "Done."
