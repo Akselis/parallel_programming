@@ -1,0 +1,7 @@
+runconfig:
+  - type: 0
+    threads: 1
+    numDP: 6000            // Vietoviu skaicius (demand points, max 10000)
+    numPF: 5              // Esanciu objektu skaicius (preexisting facilities)
+    numCL: 60              // Kandidatu naujiems objektams skaicius (candidate locations)
+    numX: 3

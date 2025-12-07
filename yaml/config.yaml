@@ -9,3 +9,9 @@ runconfig:
     threads: 2
   - type: 2
     threads: 4
+  - type: 3
+    threads: 2
+  - type: 3
+    threads: 4
+  - type: 3
+    threads: 8
