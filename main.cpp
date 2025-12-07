@@ -26,11 +26,13 @@ int main(int argc, char** argv)
 
     std::cout << "----------------------------------------" << "\n";
 
+    bool mpiInitialized = false;
     for (size_t i = 0; i < runs.size(); ++i) {
         const auto& rc = runs[i];
         std::cout << "Leidziama konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
         std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
         if(rc.type == 3){
+            mpiInitialized = true;
             int rank = 0, size = 1;
             MPI_Init(nullptr, nullptr);
             MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -38,7 +40,7 @@ int main(int argc, char** argv)
         }
         results.push_back(runEnumeration(rc));
     }
-    if(rc.type == 3){
+    if(mpiInitialized){
         MPI_Finalize();
     }
 
