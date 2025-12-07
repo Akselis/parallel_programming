@@ -146,11 +146,7 @@ RunResult runEnumeration(const RunConfig& config) {
 		break;
 	}
 	case 3:{
-		int rank = 0, size = 1;
-		MPI_Init(nullptr, nullptr);
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-		MPI_Comm_size(MPI_COMM_WORLD, &size);
-		
+				
 		MPI_Bcast(&numDP, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Bcast(&numPF, 1, MPI_INT, 0, MPI_COMM_WORLD);
 		MPI_Bcast(&numCL, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -172,8 +168,6 @@ RunResult runEnumeration(const RunConfig& config) {
 		std::vector<int> globalBestX(numX);
 		if (rank == out.rank) MPI_Send(localBestX.data(), numX, MPI_INT, 0, 0, MPI_COMM_WORLD);
 		if (rank == 0) MPI_Recv(globalBestX.data(), numX, MPI_INT, out.rank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-		MPI_Finalize();
 	}
 	case 0:
 	case 2:
