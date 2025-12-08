@@ -4,7 +4,7 @@
 #include <vector>
 #include <omp.h>
 
-namespace std;
+using namespace std;
 
 // MPI-enabled enumeration (distributed memory)
 RunResult runEnumerationMPI(const RunConfig& config) {
