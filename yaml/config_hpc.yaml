@@ -5,4 +5,8 @@ runconfig:
     threads: 4
   - type: 3
     threads: 8
+  - type: 3
+    threads: 16
+  - type: 3
+    threads: 32
   
