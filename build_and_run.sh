@@ -15,7 +15,7 @@ cmake -S third_party/yaml-cpp-yaml-cpp-0.7.0 -B "${LIB_DIR}" \
 echo "Building yaml-cpp..."
 cmake --build "${LIB_DIR}" --config Release -- -j"$(nproc)"
 
-echo "Building application with mpic++..."
+echo "Building application with g++..."
 g++ -fopenmp main.cpp flpenum/flpenum.cpp config/config.cpp \
   -I. -Iconfig -Iflpenum -I"${INC_DIR}" \
   -L"${LIB_DIR}" -lyaml-cpp -o flpenum_app
