@@ -33,9 +33,12 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        int size = rc.threads;
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
+
         if (rank == 0) {
             std::cout << "Leidziama MPI konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
-            std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
+            std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Mazgai: " << rc.threads << "\n\n";
         }
 
         runEnumerationMPI(rc);

@@ -2,7 +2,6 @@
 #include <mpi.h>
 #include <iostream>
 #include <vector>
-#include <omp.h>
 
 using namespace std;
 
@@ -17,7 +16,6 @@ RunResult runEnumerationMPI(const RunConfig& config) {
     numCL = config.numCL;
     numX  = config.numX;
     demandFile = config.inputFile;
-    omp_set_num_threads(config.threads);
 
     // allocate global buffers
     if (X) delete[] X;
