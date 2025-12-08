@@ -36,3 +36,6 @@ int increaseX(int* X, int index, int maxindex);
 
 // Entry point you'll call from main.cpp
 RunResult runEnumeration(const RunConfig& config);
+
+// MPI-enabled enumeration (defined in flpenum_mpi.cpp)
+RunResult runEnumerationMPI(const RunConfig& config);

@@ -10,7 +10,6 @@
 #include <ctime>
 #include <sstream>
 #include <filesystem>
-#include <mpi.h>
 
 int main(int argc, char** argv)
 {
@@ -21,53 +20,17 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    bool mpiInitialized = false;
-    int mpiRank = 0;
-    int mpiSize = 1;
-
-    // Initialize MPI lazily when the first type 3 run appears
-    for (size_t i = 0; i < runs.size(); ++i) {
-        const auto& rc = runs[i];
-        if (rc.type == 3 && !mpiInitialized) {
-            mpiInitialized = true;
-            MPI_Init(nullptr, nullptr);
-            MPI_Comm_rank(MPI_COMM_WORLD, &mpiRank);
-            MPI_Comm_size(MPI_COMM_WORLD, &mpiSize);
-        }
-    }
-
     std::vector<RunResult> results;
     results.reserve(runs.size());
 
-    if (mpiRank == 0) {
-        std::cout << "----------------------------------------" << "\n";
-    }
+    std::cout << "----------------------------------------" << "\n";
 
     for (size_t i = 0; i < runs.size(); ++i) {
         const auto& rc = runs[i];
-        bool isMPI = (rc.type == 3);
-
-        if (mpiRank == 0) {
-            std::cout << "Leidziama konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
-            std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
-        }
-
-        if (isMPI) {
-            RunResult r = runEnumeration(rc); // all ranks participate
-            if (mpiRank == 0) results.push_back(r);
-        } else {
-            // only rank 0 runs non-MPI configs; others skip
-            if (mpiRank == 0) {
-                results.push_back(runEnumeration(rc));
-            }
-        }
+        std::cout << "Leidziama konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
+        std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Gijos: " << rc.threads << "\n\n";
+        results.push_back(runEnumeration(rc));
     }
-
-    if (mpiInitialized) {
-        MPI_Finalize();
-    }
-
-    if (mpiRank != 0) return 0; // only root writes output
 
     std::filesystem::create_directories("results");
     auto now = std::chrono::system_clock::now();
