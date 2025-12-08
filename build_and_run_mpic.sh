@@ -4,10 +4,15 @@ set -euo pipefail
 INC_DIR="third_party/yaml-cpp-yaml-cpp-0.7.0/include"
 LIB_DIR="third_party/yaml-cpp-yaml-cpp-0.7.0/build_mpi"
 
-echo "Configuring yaml-cpp with mpic++..."
+# Clean stale CMake cache if the source path moved
+if [ -f "${LIB_DIR}/CMakeCache.txt" ]; then
+  rm -rf "${LIB_DIR}"
+fi
+
+echo "Configuring yaml-cpp with mpiCC..."
 cmake -S third_party/yaml-cpp-yaml-cpp-0.7.0 -B "${LIB_DIR}" \
   -G "Unix Makefiles" \
-  -DCMAKE_CXX_COMPILER=mpic++ \
+  -DCMAKE_CXX_COMPILER=mpiCC \
   -DYAML_BUILD_SHARED_LIBS=OFF \
   -DYAML_CPP_BUILD_TESTS=OFF \
   -DYAML_CPP_BUILD_TOOLS=OFF
@@ -15,8 +20,8 @@ cmake -S third_party/yaml-cpp-yaml-cpp-0.7.0 -B "${LIB_DIR}" \
 echo "Building yaml-cpp..."
 cmake --build "${LIB_DIR}" --config Release -- -j"$(nproc)"
 
-echo "Building application with mpic++..."
-mpic++ -O2 -fopenmp main_mpi.cpp flpenum/flpenum.cpp flpenum/flpenum_mpi.cpp config/config.cpp \
+echo "Building application with mpiCC..."
+mpiCC -O2 -fopenmp main_mpi.cpp flpenum/flpenum.cpp flpenum/flpenum_mpi.cpp config/config.cpp \
   -I. -Iconfig -Iflpenum -I"${INC_DIR}" \
   -L"${LIB_DIR}" -lyaml-cpp -o flpenum_mpi_app
 
