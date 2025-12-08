@@ -1,21 +1,21 @@
 runconfig:
   - type: 0
     threads: 1
-    numDP: 5500
+    numDP: 5250
     numCL: 55
   - type: 1
     threads: 2
-    numDP: 5500
+    numDP: 5250
     numCL: 55
   - type: 1
     threads: 4
-    numDP: 5500
+    numDP: 5250
     numCL: 55
   - type: 2
     threads: 2
-    numDP: 5500
+    numDP: 5250
     numCL: 55
   - type: 2
     threads: 4
-    numDP: 5500
+    numDP: 5250
     numCL: 55
