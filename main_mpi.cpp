@@ -13,36 +13,32 @@ int main(int argc, char** argv) {
 
     std::string configPath = (argc > 1) ? argv[1] : "./yaml/config_hpc.yaml";
     std::vector<RunConfig> runs;
-    if (!loadConfig(configPath, runs)) {
+    if (!loadConfig(configPath, runs) || runs.empty()) {
         if (rank == 0) std::cerr << "Nepavyko ikelti konfiguracijos failo " << configPath << '\n';
         MPI_Finalize();
         return 1;
     }
 
+    RunConfig rc = runs.front(); // use only one config
+    rc.type = 3;                 // enforce MPI mode
+
     if (rank == 0) {
+        if (runs.size() > 1) {
+            std::cout << "Demesio: naudojama tik pirma konfiguracija is failo.\n";
+        }
         std::cout << "----------------------------------------\n";
+        std::cout << "Leidziama MPI konfiguracija\n";
+        std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Rangai (threads laukas): " << rc.threads << "\n\n";
     }
 
-    for (size_t i = 0; i < runs.size(); ++i) {
-        RunConfig rc = runs[i];
-        if (rc.type != 3) {
-            if (rank == 0) {
-                std::cout << "Praleidziama konfiguracija nr. " << (i + 1)
-                          << " (tipas " << rc.type << " neskirtas MPI)\n";
-            }
-            continue;
-        }
-
-        int size = rc.threads;
-        MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-        if (rank == 0) {
-            std::cout << "Leidziama MPI konfiguracija nr. " << (i + 1) << "/" << runs.size() << "\n";
-            std::cout << "--Tipas: " << getLabel(rc.type) << "\n--Mazgai: " << rc.threads << "\n\n";
-        }
-
-        runEnumerationMPI(rc);
+    int size = 1;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if (rank == 0 && rc.threads != size) {
+        std::cerr << "Perspejimas: konfiguroje nurodyta " << rc.threads
+                  << " rangai, bet MPI paleista su " << size << ".\n";
     }
+
+    runEnumerationMPI(rc);
 
     MPI_Finalize();
     return 0;
