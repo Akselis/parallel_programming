@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p main
-#SBATCH -n4
+#SBATCH -n 32
 module load openmpi
 set -euo pipefail
 
