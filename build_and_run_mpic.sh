@@ -1,4 +1,6 @@
-#!/usr/bin/env bash
+#!/bin/bash
+#SBATCH -p main
+#SBATCH -n4
 set -euo pipefail
 
 INC_DIR="third_party/yaml-cpp-yaml-cpp-0.7.0/include"
