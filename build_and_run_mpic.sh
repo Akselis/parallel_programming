@@ -25,13 +25,13 @@ MPIRUN=${MPIRUN:-mpirun}
 if command -v ./yq >/dev/null 2>&1; then
   CONFIG_PATH=${1:-./yaml/config_hpc.yaml}
   echo "yq found; iterating runconfig entries in ${CONFIG_PATH}"
-  run_count=$(yq '.runconfig | length' "${CONFIG_PATH}")
+  run_count=$(./yq '.runconfig | length' "${CONFIG_PATH}")
   if [ "${run_count}" -eq 0 ]; then
     echo "No runconfig entries found in ${CONFIG_PATH}"
     exit 1
   fi
   for idx in $(seq 0 $((run_count-1))); do
-    ranks=$(yq ".runconfig[${idx}].threads // 1" "${CONFIG_PATH}")
+    ranks=$(./yq ".runconfig[${idx}].threads // 1" "${CONFIG_PATH}")
     echo "Run $((idx+1))/${run_count}: mpirun -np ${ranks} ${MPIRUN_FLAGS:-} ./flpenum_mpi_app ${CONFIG_PATH} ${idx}"
     ${MPIRUN} -np "${ranks}" ${MPIRUN_FLAGS:-} ./flpenum_mpi_app "${CONFIG_PATH}" "${idx}"
   done
