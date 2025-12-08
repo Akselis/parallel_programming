@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    std::string configPath = (argc > 1) ? argv[1] : "./yaml/config_hpc.yaml";
+    std::string configPath = (argc > 1) ? argv[1] : "./yaml/config_hpc2.yaml";
     std::vector<RunConfig> runs;
     if (!loadConfig(configPath, runs) || runs.empty()) {
         if (rank == 0) std::cerr << "Nepavyko ikelti konfiguracijos failo " << configPath << '\n';

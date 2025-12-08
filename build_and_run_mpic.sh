@@ -23,6 +23,6 @@ mpic++ -O2 -fopenmp main_mpi.cpp flpenum/flpenum.cpp flpenum/flpenum_mpi.cpp con
 # Run once; set ranks with MPI_NP or via MPIRUN_FLAGS.
 MPIRUN=${MPIRUN:-mpirun}
 NP_ARG=${MPI_NP:+"-np ${MPI_NP}"}
-echo "Running: ${MPIRUN} ${NP_ARG} ${MPIRUN_FLAGS:-} ./flpenum_mpi_app"
-${MPIRUN} ${NP_ARG} ${MPIRUN_FLAGS:-} ./flpenum_mpi_app
+echo "Running: ${MPIRUN} ${NP_ARG} ${MPIRUN_FLAGS:-} ./flpenum_mpi_app ${*}"
+${MPIRUN} ${NP_ARG} ${MPIRUN_FLAGS:-} ./flpenum_mpi_app "$@"
 echo "Done."
