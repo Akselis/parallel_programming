@@ -131,6 +131,8 @@ RunResult runEnumeration(const RunConfig& config) {
     //----- Pradines naujo ir geriausio sprendiniu reiksmes -------------------
 	switch (config.type) {
 	case 1:
+	case 2:
+	case 3:
 		#pragma omp parallel for schedule(static)
 		for (int i = 0; i < numX; i++) {
 			X[i] = i;
@@ -138,8 +140,6 @@ RunResult runEnumeration(const RunConfig& config) {
 		}
 		break;
 	case 0:
-	case 2:
-	case 3:
 	default:
 		for (int i = 0; i < numX; i++) {
 			X[i] = i;
@@ -152,7 +152,8 @@ RunResult runEnumeration(const RunConfig& config) {
 		
     //----- Visu galimu sprendiniu perrinkimas --------------------------------
 	switch (config.type) {
-	case 1:{
+	case 1:
+	case 2:{
 		double globalBestU = -1.0;
 		std::vector<int> globalBestX(numX);
 
@@ -217,7 +218,6 @@ RunResult runEnumeration(const RunConfig& config) {
 		break;
 	}
 	case 0:
-	case 2:
 	default:
 		while (increaseX(X, numX - 1, numCL) == true) {
 			u = evaluateSolution(X);
