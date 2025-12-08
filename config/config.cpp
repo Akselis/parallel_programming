@@ -42,10 +42,14 @@ bool loadConfig(const std::string& path, std::vector<RunConfig>& out) {
 
 std::string getLabel(int type) {
     switch (type) {
-        case 0: return "Nelygiagretintas";
-        case 1: return "Lygiagretintas algoritmas, kai duomenu ikelimas ir matricos skaiciavimas nuoseklus";
-        case 2: return "Lygiagretintas atstumus matricos skaiciavimas, kai like veiksmai nuoseklus";
-        case 3: return "Lygiagretintas matricos skaiciavimas ir paieska";
-        default: return "Nezinomas tipas";
+        case 0: 
+            return "Nelygiagretintas";
+        case 1: 
+            return "Lygiagretinta sprendinio paieska";
+        case 2: 
+        case 3:
+            return "Lygiagretintas matricos skaiciavimas ir sprendinio paieska";
+        default: 
+            return "Nezinomas tipas";
     }
 }

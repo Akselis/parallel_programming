@@ -1,7 +1,3 @@
 runconfig:
   - type: 3
-    threads: 2
-  - type: 3
-    threads: 4
-  - type: 3
-    threads: 8
+    threads: 1
