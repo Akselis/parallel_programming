@@ -22,7 +22,7 @@ mpic++ -O2 -fopenmp main_mpi.cpp flpenum/flpenum.cpp flpenum/flpenum_mpi.cpp con
 
 MPIRUN=${MPIRUN:-mpirun}
 
-if command -v ./yq/yq >/dev/null 2>&1; then
+if command -v ./yq >/dev/null 2>&1; then
   CONFIG_PATH=${1:-./yaml/config_hpc.yaml}
   echo "yq found; iterating runconfig entries in ${CONFIG_PATH}"
   run_count=$(yq '.runconfig | length' "${CONFIG_PATH}")
