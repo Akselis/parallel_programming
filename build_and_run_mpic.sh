@@ -6,6 +6,13 @@ set -euo pipefail
 INC_DIR="third_party/yaml-cpp-yaml-cpp-0.7.0/include"
 LIB_DIR="third_party/yaml-cpp-yaml-cpp-0.7.0/build_mpi"
 
+# Locate mpic++
+MPICXX_BIN=${MPICXX:-$(command -v mpic++ || true)}
+if [ -z "${MPICXX_BIN}" ]; then
+  echo "mpic++ not found. Set MPICXX to the full path of mpic++ or load your MPI module."
+  exit 1
+fi
+
 # Clean stale CMake cache if the source path moved
 if [ -f "${LIB_DIR}/CMakeCache.txt" ]; then
   rm -rf "${LIB_DIR}"
@@ -14,7 +21,7 @@ fi
 echo "Configuring yaml-cpp with mpic++..."
 cmake -S third_party/yaml-cpp-yaml-cpp-0.7.0 -B "${LIB_DIR}" \
   -G "Unix Makefiles" \
-  -DCMAKE_CXX_COMPILER=mpic++ \
+  -DCMAKE_CXX_COMPILER="${MPICXX_BIN}" \
   -DYAML_BUILD_SHARED_LIBS=OFF \
   -DYAML_CPP_BUILD_TESTS=OFF \
   -DYAML_CPP_BUILD_TOOLS=OFF
@@ -23,7 +30,7 @@ echo "Building yaml-cpp..."
 cmake --build "${LIB_DIR}" --config Release -- -j"$(nproc)"
 
 echo "Building application with mpic++..."
-mpic++ -O2 -fopenmp main_mpi.cpp flpenum/flpenum.cpp flpenum/flpenum_mpi.cpp config/config.cpp \
+"${MPICXX_BIN}" -O2 -fopenmp main_mpi.cpp flpenum/flpenum.cpp flpenum/flpenum_mpi.cpp config/config.cpp \
   -I. -Iconfig -Iflpenum -I"${INC_DIR}" \
   -L"${LIB_DIR}" -lyaml-cpp -o flpenum_mpi_app
 
